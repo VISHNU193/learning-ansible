@@ -1,0 +1,46 @@
+---
+- name: Install and configure Nginx web server
+  hosts: webservers
+  become: true
+  tasks:
+    - name: Update apt package index (for Debian/Ubuntu)
+      apt:
+        update_cache: yes
+      when: ansible_os_family == "Debian"
+
+    - name: Install Nginx package
+      apt:
+        name: nginx
+        state: present
+      when: ansible_os_family == "Debian"
+
+    - name: Ensure Nginx is stopped before configuration changes
+      service:
+        name: nginx
+        state: stopped
+
+    - name: Change all 'listen 80;' to 'listen 8080;' in /etc/nginx/sites-available/default
+      lineinfile:
+        path: /etc/nginx/sites-available/default
+        regexp: 'listen 80;'
+        line: 'listen 8080;'
+      notify: Reload Nginx
+      when: ansible_facts['ansible_facts']['ansible_facts']['nginx_sites_available_default'] is not None
+
+    - name: Change all 'listen 80;' to 'listen 8080;' in /etc/nginx/nginx.conf
+      lineinfile:
+        path: /etc/nginx/nginx.conf
+        regexp: 'listen 80;'
+        line: 'listen 8080;'
+      notify: Reload Nginx
+
+    - name: Change all 'listen 80;' to 'listen 8080;' in /etc/nginx/sites-enabled/*
+      lineinfile:
+        path: "{{ item }}"
+        regexp: 'listen 80;'
+        line: 'listen 8080;'
+      with_items: 
+        - /etc/nginx/sites-enabled/*
+      when: ansible_facts['ansible_facts']['ansible_facts']['sites_enabled'] != "no"
+      notify: Reload Nginx
+

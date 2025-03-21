@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Nginx!</title>
+</head>
+<body>
+    <h1>Welcome to Vishnu's custom Nginx setup!</h1>
+    <p>This page was deployed using Ansible.</p>
+</body>
+</html>
+
+
+<--
+---
+- name: Install and configure Nginx web server
+  hosts: webservers
+  become: true  # Run tasks with sudo
+  tasks:
+    - name: Update apt package index (for Debian/Ubuntu)
+      apt:
+        update_cache: yes
+      when: ansible_os_family == "Debian"
+
+    - name: Install Nginx package
+      apt:
+        name: nginx
+        state: present
+      when: ansible_os_family == "Debian"
+
+
+    - name: Ensure Nginx is started and enabled
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+
+    - name: Deploy custom index.html
+      copy:
+        src: index.html
+        dest: /var/www/html/index.html
+        owner: www-data
+        group: www-data
+        mode: '0644'
+
+
+    - name: Open port 80 in the firewall (Debian/Ubuntu)
+      ufw:
+        rule: allow
+        name: 'Nginx HTTP'
+        state: enabled
+      when: ansible_os_family == "Debian"
+
+    - name: Verify Nginx service is running
+      command: systemctl status nginx
+      register: nginx_status
+      failed_when: "'active (running)' not in nginx_status.stdout"
+      changed_when: false
+
+-->
