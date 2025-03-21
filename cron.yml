@@ -1,0 +1,10 @@
+---
+- name: Set up a cron job to run the uptime playbook every 1 minute
+  hosts: localhost
+  tasks:
+    - name: Create a cron job for uptime playbook
+      cron:
+        name: "Run uptime playbook every 1 minute"
+        minute: "*/1"
+        job: "/usr/bin/ansible-playbook /home/cselab3/Desktop/cs161/assignment_2/uptime_check.yml"
+

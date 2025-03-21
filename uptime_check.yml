@@ -1,0 +1,19 @@
+---
+- name: Execute uptime command on remote servers and log output
+  hosts: remote_servers
+  gather_facts: no
+
+  tasks:
+    - name: Execute uptime command on the remote server
+      command: uptime
+      register: uptime_result
+
+    - name: Append uptime result to a log file on the local control machine
+      local_action:
+        module: lineinfile
+        path: /home/cselab3/Desktop/cs161/assignment_2/logfile.log
+        line: "{{ inventory_hostname }}: {{ uptime_result.stdout }}"
+        create: yes
+        insertbefore: EOF  # This ensures it always appends at the end of the file
+
+
